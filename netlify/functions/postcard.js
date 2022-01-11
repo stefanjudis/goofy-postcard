@@ -2,10 +2,11 @@ const fetch = require("cross-fetch");
 const { builder } = require("@netlify/functions");
 
 async function handler(event, context) {
-  const { queryStringParameters } = event;
-  const { type: typeId, message } = queryStringParameters;
-
-  console.log(event);
+  const { path } = event;
+  const { groups } = /\/postcard\/(?<type>.*?)\/message\/(?<message>.*?)$/.exec(
+    path
+  );
+  const { message, type: typeId } = groups;
 
   const query = `
     query {
@@ -47,7 +48,7 @@ async function handler(event, context) {
       </head>
       <body>
         <img src="${entry.postcardOption.image.url}" alt="jooo">
-        <div>${message}</div>
+        <div>${decodeURI(message)}</div>
       </body>
       </html>
     `,

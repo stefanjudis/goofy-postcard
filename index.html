@@ -21,7 +21,7 @@
 
     function renderItems(items) {
       document.body.innerHTML = `
-        <form method="get" action="/postcard">
+        <form method="get" action="/generated/postcard">
           ${items.map(item => `
               <label for=${item.sys.id}>${item.title}</label>
               <input id=${item.sys.id} value="${item.sys.id}" type="radio" name="type">
