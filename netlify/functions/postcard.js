@@ -1,9 +1,11 @@
-const fetch = require("node-fetch");
+const fetch = require("cross-fetch");
 const { builder } = require("@netlify/functions");
 
 async function handler(event, context) {
   const { queryStringParameters } = event;
   const { type: typeId, message } = queryStringParameters;
+
+  console.log(event);
 
   const query = `
     query {
