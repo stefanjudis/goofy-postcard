@@ -66,7 +66,7 @@ async function handler(event, _context) {
           height=${image.height}
           alt="${image.title} ">
         <p>${title} "${greeting}"</p>
-        <div>${decodeURIComponent(message.replaceAll("+", " "))}</div>
+        <div>${decodeURIComponent(message.replace(/\+/g, " "))}</div>
       </body>
       </html>
     `,
