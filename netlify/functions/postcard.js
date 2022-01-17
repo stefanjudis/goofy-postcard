@@ -1,38 +1,51 @@
 const fetch = require("cross-fetch");
 const { builder } = require("@netlify/functions");
+const { CONTENTFUL_SPACE, CONTENTFUL_TOKEN } = process.env;
 
-async function handler(event, context) {
+async function handler(event, _context) {
   const { path } = event;
-  const { groups } = /\/postcard\/(?<type>.*?)\/message\/(?<message>.*?)$/.exec(
+  // @JASON is there a better way than Regex to fiddle things out of the URL?
+  const parsedUrl = /\/postcard\/(?<type>.*?)\/message\/(?<message>.*?)$/.exec(
     path
   );
+
+  const { groups } = parsedUrl;
   const { message, type: typeId } = groups;
 
   const query = `
-    query {
-      postcardOption(id: "${typeId}") {
+    query($typeId: String!) {
+      postcardOption(id: $typeId) {
         title
         greeting
         image {
           title
           url
+          width
+          height
         }
       }
-    }`;
+    }
+  `;
 
   const response = await fetch(
-    `https://graphql.contentful.com/content/v1/spaces/tldd7x6v2iqj`,
+    `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
     {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        Authorization: `Bearer QWsWpZckweHt7DXGe8qBhFLI_MPwnaIZUKLSAAzDj4I`,
+        Authorization: `Bearer ${CONTENTFUL_TOKEN}`,
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({
+        query,
+        variables: {
+          typeId,
+        },
+      }),
     }
   );
 
   const { data: entry } = await response.json();
+  const { greeting, title, image } = entry.postcardOption;
 
   return {
     statusCode: 200,
@@ -44,11 +57,16 @@ async function handler(event, context) {
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
+        <title>Here's a post card for you!</title>
       </head>
       <body>
-        <img src="${entry.postcardOption.image.url}" alt="jooo">
-        <div>${decodeURI(message)}</div>
+        <img
+          src="${image.url}"
+          width=${image.width}
+          height=${image.height}
+          alt="${image.title} ">
+        <p>${title} "${greeting}"</p>
+        <div>${decodeURIComponent(message.replaceAll("+", " "))}</div>
       </body>
       </html>
     `,
