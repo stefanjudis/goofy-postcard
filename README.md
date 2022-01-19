@@ -111,7 +111,7 @@ const { CONTENTFUL_SPACE, CONTENTFUL_TOKEN } = process.env;
 
 async function handler(event, _context) {
   const { type, message } = event.queryStringParameters;
-  clg(type, message);
+  console.log(type, message);
   return {
     statusCode: 200,
   };
