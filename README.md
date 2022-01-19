@@ -4,7 +4,11 @@
 
 ### Content model setup (Stefan)
 
+![Content model](./static/content-model.png)
+
 ### Create entries (Stefan)
+
+@stefan Have the pictures at hand. :)
 
 ### Create `index.html` and show `netlify dev` ask Jason about it (Stefan)
 
