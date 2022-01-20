@@ -245,7 +245,7 @@ Update `_redirects` to points to `generated`.
 
 ```
 /generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
-/postcard/:type/message/:message /.netlify/generated/postcard 200
+/postcard/:type/message/:message /.netlify/builders/postcard 200
 ```
 
 Change to URL parsing instead of queryParam parsing.
