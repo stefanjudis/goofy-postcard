@@ -37,8 +37,6 @@ async function handler(event, _context) {
     },
   );
 
-  console.log(response);
-
   const { data: entry } = await response.json();
   const { greeting, title, image } = entry.postcardOption;
 
@@ -53,15 +51,25 @@ async function handler(event, _context) {
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Here's a post card for you!</title>
+        <link rel="stylesheet" href="/styles.css" />
       </head>
       <body>
-        <img
-          src="${image.url}"
-          width=${image.width}
-          height=${image.height}
-          alt="${image.title} ">
-        <p>${title} "${greeting}"</p>
-        <div>${decodeURIComponent(message.replace(/\+/g, ' '))}</div>
+        <div class="background">
+          <div class="postcard">
+            <figure>
+              <img
+                src="${image.url}"
+                width=${image.width}
+                height=${image.height}
+                alt="${image.title} "
+              />
+              <figcaption>${title} "${greeting}"</figcaption>
+            </figure>
+            <div class="message">${decodeURIComponent(
+              message.replace(/\+/g, ' '),
+            )}</div>
+          </div>
+        </div>
       </body>
       </html>
     `,

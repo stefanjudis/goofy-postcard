@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  margin: 0;
 }
 
 html {
@@ -29,7 +30,7 @@ form {
 
 fieldset {
   border: none;
-  margin: 0 0 1rem;
+  margin: 0 0 2rem;
   padding: 0;
 }
 
@@ -41,7 +42,7 @@ legend,
 form > label {
   display: block;
   font-weight: bold;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 input:not(:first-of-type) {
@@ -55,9 +56,92 @@ fieldset > label {
 
 textarea {
   display: block;
+  font-family: inherit;
+  height: 3rem;
   margin-bottom: 1rem;
+  padding: 0.25rem;
   width: 100%;
 }
 
 button {
+  background: hsl(215 80% 40%);
+  border: none;
+  border-radius: 0.25rem;
+  color: hsl(0 0% 100%);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+}
+
+.background {
+  align-items: center;
+  background: hsl(215 80% 90%);
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+}
+
+.postcard {
+  background: hsl(215 80% 5%);
+  border: 2px solid hsl(215 80% 5%);
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem auto;
+  position: relative;
+  transform: rotate(-1deg);
+  width: min(90vw, 600px);
+}
+
+.postcard::after {
+  background: hsl(215 80% 5%);
+  content: '';
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: rotate(3deg);
+  width: 100%;
+  z-index: 10;
+}
+
+figure {
+  display: block;
+  margin: 0;
+  position: relative;
+  width: 300px;
+  z-index: 20;
+}
+
+figure img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+figcaption {
+  bottom: 20%;
+  color: hsl(215 0% 100%);
+  font-family: impact;
+  font-size: 1.125rem;
+  font-weight: 900;
+  left: 10%;
+  position: absolute;
+  text-align: center;
+  text-shadow: 2px 2px 0 hsl(215 80% 10%), -2px 2px 0 hsl(215 80% 10%),
+    -2px -2px 0 hsl(215 80% 10%), 2px -2px 0 hsl(215 80% 10%);
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+  width: 80%;
+}
+
+.message {
+  background: hsl(215 25% 95%);
+  color: hsl(215 75% 10%);
+  padding: 2rem;
+  position: relative;
+  width: 300px;
+  z-index: 20;
 }
