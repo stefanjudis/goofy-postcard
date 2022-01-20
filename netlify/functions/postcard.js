@@ -1,16 +1,9 @@
-const fetch = require("cross-fetch");
-const { builder } = require("@netlify/functions");
-const { CONTENTFUL_SPACE, CONTENTFUL_TOKEN } = process.env;
+const fetch = require('cross-fetch');
+const { builder } = require('@netlify/functions');
 
 async function handler(event, _context) {
   const { path } = event;
-  // @JASON is there a better way than Regex to fiddle things out of the URL?
-  const parsedUrl = /\/postcard\/(?<type>.*?)\/message\/(?<message>.*?)$/.exec(
-    path
-  );
-
-  const { groups } = parsedUrl;
-  const { message, type: typeId } = groups;
+  const [, , typeId, , message] = path.split('/');
 
   const query = `
     query($typeId: String!) {
@@ -28,12 +21,12 @@ async function handler(event, _context) {
   `;
 
   const response = await fetch(
-    `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
+    `https://graphql.contentful.com/content/v1/spaces/${process.env.CONTENTFUL_SPACE}`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "content-type": "application/json",
-        Authorization: `Bearer ${CONTENTFUL_TOKEN}`,
+        'content-type': 'application/json',
+        Authorization: `Bearer ${process.env.CONTENTFUL_TOKEN}`,
       },
       body: JSON.stringify({
         query,
@@ -41,8 +34,10 @@ async function handler(event, _context) {
           typeId,
         },
       }),
-    }
+    },
   );
+
+  console.log(response);
 
   const { data: entry } = await response.json();
   const { greeting, title, image } = entry.postcardOption;
@@ -66,7 +61,7 @@ async function handler(event, _context) {
           height=${image.height}
           alt="${image.title} ">
         <p>${title} "${greeting}"</p>
-        <div>${decodeURIComponent(message.replace(/\+/g, " "))}</div>
+        <div>${decodeURIComponent(message.replace(/\+/g, ' '))}</div>
       </body>
       </html>
     `,
