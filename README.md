@@ -241,7 +241,7 @@ const { builder } = require("@netlify/functions");
 exports.handler = builder(handler);
 ```
 
-Update `_redirects` to points to `generated`.
+Update `_redirects` to points to `builders`.
 
 ```
 /generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
