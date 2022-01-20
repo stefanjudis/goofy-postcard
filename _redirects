@@ -1,2 +1,2 @@
 /generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
-/postcard/:type/message/:message /.netlify/functions/postcard 200
+/postcard/:type/message/:message /.netlify/builders/postcard 200
