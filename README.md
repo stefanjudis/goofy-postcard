@@ -2,94 +2,99 @@
 
 ## Steps to follow
 
+### Show site running with `netlify dev`
+
 ### Content model setup (Stefan)
 
 ![Content model](./static/content-model.png)
 
 ### Create entries (Stefan)
 
-@stefan Have the pictures at hand. :)
+@stefan Use the assets that are already in the space
 
-### Create `index.html` and show `netlify dev` ask Jason about it (Stefan)
+### Build GQL query
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
+Collection:
 
-  <body>
-    <h1>Hello world</h1>
-  </body>
-</html>
+```
+query {
+  postcardOptionCollection {
+    items {
+      sys {
+        id
+      }
+      title
+      greeting
+      image {
+        title
+        url
+      }
+    }
+  }
+}
+```
+
+Single:
+
+```
+query($typeId: String!) {
+  postcardOption(id: $typeId) {
+    title
+    greeting
+    image {
+      title
+      url
+      width
+      height
+    }
+  }
+}
 ```
 
 ### Edit and adjust `index.html` to fetch Contentful data (Stefan)
 
-```javascript
-const CONTENTFUL_SPACE = "tldd7x6v2iqj";
-const CONTENTFUL_CDA_TOKEN = "QWsWpZckweHt7DXGe8qBhFLI_MPwnaIZUKLSAAzDj4I";
+⚠️ Reuse the `renderItems` function.
 
-const query = `
-  query {
-    postcardOptionCollection {
-      items {
-        sys {
-      id
-    }
-    title
-    greeting
-        image {
-          title
-          url
+```javascript
+async function renderForm() {
+  try {
+    const query = `
+          query {
+            postcardOptionCollection {
+              items {
+                sys {
+              id
+            }
+            title
+            greeting
+                image {
+              title
+              url
+            }
+          }
         }
       }
-    }
+      `;
+
+    const response = await window.fetch(
+      `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Authorization: `Bearer ${CONTENTFUL_CDA_TOKEN}`,
+        },
+        body: JSON.stringify({ query }),
+      }
+    );
+
+    const { data } = await response.json();
+    const { items } = data.postcardOptionCollection;
+
+    renderItems(items);
+  } catch (error) {
+    console.log(error);
   }
-`;
-
-const response = await window.fetch(
-  `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
-  {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${CONTENTFUL_CDA_TOKEN}`,
-    },
-    body: JSON.stringify({ query }),
-  }
-);
-
-const { data } = await response.json();
-const { items } = data.postcardOptionCollection;
-console.log(items);
-```
-
-#### Render form items (Stefan)
-
-```javascript
-function renderItems(items) {
-  document.body.innerHTML = `
-    <h1>#teamBunnies vs. #teamHippos</h1>
-    <form method="get" action="/">
-      ${items
-        .map(
-          (item) => `
-          <label for=${item.sys.id}>${item.title}</label>
-          <input id=${item.sys.id} value="${item.sys.id}" type="radio" name="type">
-        `
-        )
-        .join("")}
-      <label for="message">Message</label>
-      <textarea name="message" id="message" required></textarea>
-
-      <button type="submit">Create postcard</button>
-      </form >
-    `;
 }
 ```
 
@@ -120,7 +125,7 @@ async function handler(event, _context) {
 exports.handler = handler;
 ```
 
-⚠️ Point form to `/.netlify/functions/postcard` and see log of `type` and `message`.
+⚠️ Point `index.html` form to `/.netlify/functions/postcard` and see log of `type` and `message`!
 
 Add Contentful fetching and rendering.
 
@@ -177,15 +182,25 @@ async function handler(event, _context) {
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Here's a post card for you!</title>
+        <link rel="stylesheet" href="/styles.css" />
       </head>
       <body>
-        <img
-          src="${image.url}"
-          width=${image.width}
-          height=${image.height}
-          alt="${image.title} ">
-        <p>${title} "${greeting}"</p>
-        <div>${decodeURIComponent(message.replace(/\+/g, " "))}</div>
+        <div class="background">
+          <div class="postcard">
+            <figure>
+              <img
+                src="${image.url}"
+                width=${image.width}
+                height=${image.height}
+                alt="${image.title} "
+              />
+              <figcaption>${title}: "${greeting}"</figcaption>
+            </figure>
+            <div class="message">${decodeURIComponent(
+              message.replace(/\+/g, " ")
+            )}</div>
+          </div>
+        </div>
       </body>
       </html>
     `,
@@ -199,7 +214,7 @@ exports.handler = handler;
 
 Discuss the query param topic...
 
-Set up `_redirects`. \*\*Note that we're still pointing to `/.netlify/functions/postcard`.
+Set up `_redirects`. _Note that we're still pointing to `/.netlify/functions/postcard`_.
 
 ```
 /generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
@@ -210,7 +225,7 @@ And change the form to point to `/generated/postcard`.
 
 ### Make serverless function on-demand (Jason)
 
-Install function plugin.
+Install functions plugin.
 
 ```bash
 npm install @netlify/functions
@@ -237,12 +252,8 @@ Change to URL parsing instead of queryParam parsing.
 
 ```javascript
 async function handler(event, _context) {
-  const parsedUrl = /\/postcard\/(?<type>.*?)\/message\/(?<message>.*?)$/.exec(
-    event.path
-  );
-
-  const { groups } = parsedUrl;
-  const { message, type: typeId } = groups;
+  const { path } = event;
+  const [, , typeId, , message] = path.split("/");
 
   // more stuff ...
 }

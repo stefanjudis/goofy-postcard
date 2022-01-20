@@ -12,7 +12,7 @@
 <body>
   <main>
     <h1><span>#teamBunnies 🐇</span> vs. <span>#teamHippos 🦛</span></h1>
-    <form method="get" action="/generated/postcard">
+    <form method="get" action="/">
       <fieldset class="options">
         <legend>Choose your team</legend>
       </fieldset>
@@ -24,9 +24,8 @@
   </main>
 
   <script type="module">
-    const CONTENTFUL_SPACE = 'tldd7x6v2iqj';
-    const CONTENTFUL_CDA_TOKEN =
-      'QWsWpZckweHt7DXGe8qBhFLI_MPwnaIZUKLSAAzDj4I';
+    const CONTENTFUL_SPACE = '...';
+    const CONTENTFUL_CDA_TOKEN = '...';
 
     function renderItems(items) {
       const options = document.querySelector('.options');
@@ -48,44 +47,7 @@
     }
 
     async function renderForm() {
-      try {
-        const query = `
-          query {
-            postcardOptionCollection {
-              items {
-                sys {
-              id
-            }
-            title
-            greeting
-                image {
-              title
-              url
-            }
-          }
-        }
-      }
-      `;
-
-        const response = await window.fetch(
-          `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
-          {
-            method: 'POST',
-            headers: {
-              'content-type': 'application/json',
-              Authorization: `Bearer ${CONTENTFUL_CDA_TOKEN}`,
-            },
-            body: JSON.stringify({ query }),
-          },
-        );
-
-        const { data } = await response.json();
-        const { items } = data.postcardOptionCollection;
-
-        renderItems(items);
-      } catch (error) {
-        console.log(error);
-      }
+      // implement me!!!
     }
 
     renderForm();
