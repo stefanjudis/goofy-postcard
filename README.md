@@ -53,7 +53,7 @@ query($typeId: String!) {
 
 ### Edit and adjust `index.html` to fetch Contentful data (Stefan)
 
-⚠️ Reuse the `renderItems` function.
+⚠️ Reuse the `renderItems` function that's already there.
 
 ```javascript
 async function renderForm() {
@@ -107,7 +107,7 @@ npm init --yes
 npm install cross-fetch
 ```
 
-⚠️ Set up environment variables in Netlify.
+⚠️ Pull in environment variables via Netlify CLI.
 
 ```javascript
 // netlify/functions/postcard.js
@@ -125,7 +125,7 @@ async function handler(event, _context) {
 exports.handler = handler;
 ```
 
-⚠️ Point `index.html` form to `/.netlify/functions/postcard` and see log of `type` and `message`!
+⚠️ Point `index.html` form to `/.netlify/functions/postcard` and show log of `type` and `message`!
 
 Add Contentful fetching and rendering.
 
@@ -210,7 +210,7 @@ async function handler(event, _context) {
 exports.handler = handler;
 ```
 
-### Moving to on-demand handlers - set up redirects (Jason)
+### Clean up function URL and move to on-demand handlers - set up redirects (Jason)
 
 Discuss the query param topic...
 
@@ -221,7 +221,7 @@ Set up `_redirects`. _Note that we're still pointing to `/.netlify/functions/pos
 /postcard/:type/message/:message /.netlify/functions/postcard 200
 ```
 
-And change the form to point to `/generated/postcard`.
+And change the form in `index.html` to point to `/generated/postcard`.
 
 ### Make serverless function on-demand (Jason)
 
