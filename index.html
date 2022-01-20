@@ -1,43 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bunnies vs. Hippos</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bunnies vs. Hippos</title>
-  <style>
-    label {
-      display: block;
-    }
-  </style>
-</head>
+  <body>
+    <main>
+      <h1>#teamBunnies vs. #teamHippos</h1>
+      <form method="get" action="/generated/postcard">
+        <fieldset class="options">
+          <legend>Choose your team</legend>
+        </fieldset>
+        <label for="message">Message</label>
+        <textarea name="message" id="message" required></textarea>
 
-<body>
-  <script type="module">
-    const CONTENTFUL_SPACE = 'tldd7x6v2iqj';
-    const CONTENTFUL_CDA_TOKEN = 'QWsWpZckweHt7DXGe8qBhFLI_MPwnaIZUKLSAAzDj4I'
+        <button type="submit">Create postcard</button>
+      </form>
+    </main>
 
-    function renderItems(items) {
-      document.body.innerHTML = `
-        <h1>#teamBunnies vs. #teamHippos</h1>
-        <form method="get" action="/generated/postcard">
-          ${items.map(item => `
-              <label for=${item.sys.id}>${item.title}</label>
-              <input id=${item.sys.id} value="${item.sys.id}" type="radio" name="type">
-            `).join('')
-        }
-          <label for="message">Message</label>
-          <textarea name="message" id="message" required></textarea>
+    <script type="module">
+      const CONTENTFUL_SPACE = 'tldd7x6v2iqj';
+      const CONTENTFUL_CDA_TOKEN =
+        'QWsWpZckweHt7DXGe8qBhFLI_MPwnaIZUKLSAAzDj4I';
 
-          <button type="submit">Create postcard</button>
-          </form >
-        `
-    }
+      function renderItems(items) {
+        const options = document.querySelector('.options');
 
-    async function renderForm() {
-      try {
-        const query = `
+        items.map((item) => {
+          const label = document.createElement('label');
+          label.setAttribute('for', item.sys.id);
+          label.innerText = item.title;
+
+          const input = document.createElement('input');
+          input.name = 'type';
+          input.type = 'radio';
+          input.id = item.sys.id;
+          input.value = item.sys.id;
+
+          options.appendChild(input);
+          options.appendChild(label);
+        });
+      }
+
+      async function renderForm() {
+        try {
+          const query = `
           query {
             postcardOptionCollection {
               items {
@@ -55,26 +66,28 @@
       }
       `;
 
-        const response = await window.fetch(`https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            Authorization: `Bearer ${CONTENTFUL_CDA_TOKEN}`
-          },
-          body: JSON.stringify({ query })
-        })
+          const response = await window.fetch(
+            `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
+            {
+              method: 'POST',
+              headers: {
+                'content-type': 'application/json',
+                Authorization: `Bearer ${CONTENTFUL_CDA_TOKEN}`,
+              },
+              body: JSON.stringify({ query }),
+            },
+          );
 
-        const { data } = await response.json();
-        const { items } = data.postcardOptionCollection;
+          const { data } = await response.json();
+          const { items } = data.postcardOptionCollection;
 
-        renderItems(items);
-      } catch (error) {
-        console.log(error);
+          renderItems(items);
+        } catch (error) {
+          console.log(error);
+        }
       }
-    }
 
-    renderForm();
-  </script>
-</body>
-
+      renderForm();
+    </script>
+  </body>
 </html>
