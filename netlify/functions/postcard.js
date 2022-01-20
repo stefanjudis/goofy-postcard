@@ -1,9 +1,9 @@
-const fetch = require('cross-fetch');
-const { builder } = require('@netlify/functions');
+const fetch = require("cross-fetch");
+const { builder } = require("@netlify/functions");
 
 async function handler(event, _context) {
   const { path } = event;
-  const [, , typeId, , message] = path.split('/');
+  const [, , typeId, , message] = path.split("/");
 
   const query = `
     query($typeId: String!) {
@@ -23,9 +23,9 @@ async function handler(event, _context) {
   const response = await fetch(
     `https://graphql.contentful.com/content/v1/spaces/${process.env.CONTENTFUL_SPACE}`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'content-type': 'application/json',
+        "content-type": "application/json",
         Authorization: `Bearer ${process.env.CONTENTFUL_TOKEN}`,
       },
       body: JSON.stringify({
@@ -34,7 +34,7 @@ async function handler(event, _context) {
           typeId,
         },
       }),
-    },
+    }
   );
 
   const { data: entry } = await response.json();
@@ -63,10 +63,10 @@ async function handler(event, _context) {
                 height=${image.height}
                 alt="${image.title} "
               />
-              <figcaption>${title} "${greeting}"</figcaption>
+              <figcaption>${title}: "${greeting}"</figcaption>
             </figure>
             <div class="message">${decodeURIComponent(
-              message.replace(/\+/g, ' '),
+              message.replace(/\+/g, " ")
             )}</div>
           </div>
         </div>
