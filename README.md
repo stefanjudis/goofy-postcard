@@ -1,253 +1,31 @@
-# goofy-postcard
+# The Goofy Postcard
 
-## Steps to follow
+![goofy-postcard.netlify.com showing a formular and Jason and Stefan advocating for bunnies and hippos](./static/screenshot.png)
 
-### Content model setup (Stefan)
+[The Goofy Postcard](https://goofy-postcard.netlify.app/) shows how to use [the Contentful GraphQL API](https://www.contentful.com/developers/docs/references/graphql/) and [Netlify On-demand builders](https://docs.netlify.com/configure-builds/on-demand-builders/).
 
-![Content model](./static/content-model.png)
+This code of this repository was created in the webinar ["Stop playing cache-up: How to render content on the fly for faster builds with Jamstack"](https://www.contentful.com/resources/render-content-on-the-fly-with-jamstack/)
 
-### Create entries (Stefan)
+## Site & project structure
 
-@stefan Have the pictures at hand. :)
+The built site provides two routes:
 
-### Create `index.html` and show `netlify dev` ask Jason about it (Stefan)
+1. `/` to display a formular that allows you to pick a character and define a message
+1. `/postcard/:id/message/:msg` to render and cache a virtual postcard on demand
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
+### `/` - the index route
 
-  <body>
-    <h1>Hello world</h1>
-  </body>
-</html>
-```
+The index route is [a static HTML file](https://github.com/stefanjudis/goofy-postcard/blob/main/index.html) that fetches Contentful data client side to show postcard options. It leverages [good old `fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) to make the HTTP request.
 
-### Edit and adjust `index.html` to fetch Contentful data (Stefan)
+### `/postcard/:id/message/:msg` - a serverless function
 
-```javascript
-const CONTENTFUL_SPACE = "tldd7x6v2iqj";
-const CONTENTFUL_CDA_TOKEN = "QWsWpZckweHt7DXGe8qBhFLI_MPwnaIZUKLSAAzDj4I";
-
-const query = `
-  query {
-    postcardOptionCollection {
-      items {
-        sys {
-      id
-    }
-    title
-    greeting
-        image {
-          title
-          url
-        }
-      }
-    }
-  }
-`;
-
-const response = await window.fetch(
-  `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
-  {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${CONTENTFUL_CDA_TOKEN}`,
-    },
-    body: JSON.stringify({ query }),
-  }
-);
-
-const { data } = await response.json();
-const { items } = data.postcardOptionCollection;
-console.log(items);
-```
-
-#### Render form items (Stefan)
-
-```javascript
-function renderItems(items) {
-  document.body.innerHTML = `
-    <h1>#teamBunnies vs. #teamHippos</h1>
-    <form method="get" action="/">
-      ${items
-        .map(
-          (item) => `
-          <label for=${item.sys.id}>${item.title}</label>
-          <input id=${item.sys.id} value="${item.sys.id}" type="radio" name="type">
-        `
-        )
-        .join("")}
-      <label for="message">Message</label>
-      <textarea name="message" id="message" required></textarea>
-
-      <button type="submit">Create postcard</button>
-      </form >
-    `;
-}
-```
-
-### Handover to Jason for setting up serverless function (Jason)
-
-Install dependencies and set up `package.json`.
-
-```bash
-npm init --yes
-npm install cross-fetch
-```
-
-⚠️ Set up environment variables in Netlify.
-
-```javascript
-// netlify/functions/postcard.js
-const fetch = require("cross-fetch");
-const { CONTENTFUL_SPACE, CONTENTFUL_TOKEN } = process.env;
-
-async function handler(event, _context) {
-  const { type, message } = event.queryStringParameters;
-  console.log(type, message);
-  return {
-    statusCode: 200,
-  };
-}
-
-exports.handler = handler;
-```
-
-⚠️ Point form to `/.netlify/functions/postcard` and see log of `type` and `message`.
-
-Add Contentful fetching and rendering.
-
-```javascript
-const fetch = require("cross-fetch");
-const { CONTENTFUL_SPACE, CONTENTFUL_TOKEN } = process.env;
-
-async function handler(event, _context) {
-  const { type: typeId, message } = event.queryStringParameters;
-
-  const query = `
-    query($typeId: String!) {
-      postcardOption(id: $typeId) {
-        title
-        greeting
-        image {
-          title
-          url
-          width
-          height
-        }
-      }
-    }
-  `;
-
-  const response = await fetch(
-    `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`,
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        Authorization: `Bearer ${CONTENTFUL_TOKEN}`,
-      },
-      body: JSON.stringify({
-        query,
-        variables: {
-          typeId,
-        },
-      }),
-    }
-  );
-
-  const { data: entry } = await response.json();
-  const { greeting, title, image } = entry.postcardOption;
-
-  return {
-    statusCode: 200,
-
-    body: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Here's a post card for you!</title>
-      </head>
-      <body>
-        <img
-          src="${image.url}"
-          width=${image.width}
-          height=${image.height}
-          alt="${image.title} ">
-        <p>${title} "${greeting}"</p>
-        <div>${decodeURIComponent(message.replace(/\+/g, " "))}</div>
-      </body>
-      </html>
-    `,
-  };
-}
-
-exports.handler = handler;
-```
-
-### Moving to on-demand handlers - set up redirects (Jason)
-
-Discuss the query param topic...
-
-Set up `_redirects`. \*\*Note that we're still pointing to `/.netlify/functions/postcard`.
+The function endpoint leverages Netlify redirects to map URL query parameters to URL paths.
 
 ```
 /generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
-/postcard/:type/message/:message /.netlify/functions/postcard 200
+/postcard/:type/message/:message /.netlify/builders/postcard 200
 ```
 
-And change the form to point to `/generated/postcard`.
+To make HTTP requests the function uses [cross-fetch](https://www.npmjs.com/package/cross-fetch) and accesses Contentful credentials via environment variables defined at Netlify.
 
-### Make serverless function on-demand (Jason)
-
-Install function plugin.
-
-```bash
-npm install @netlify/functions
-```
-
-Make function on-demand.
-
-```javascript
-const { builder } = require("@netlify/functions");
-
-// ... all the stuff
-
-exports.handler = builder(handler);
-```
-
-Update `_redirects` to points to `generated`.
-
-```
-/generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
-/postcard/:type/message/:message /.netlify/generated/postcard 200
-```
-
-Change to URL parsing instead of queryParam parsing.
-
-```javascript
-async function handler(event, _context) {
-  const parsedUrl = /\/postcard\/(?<type>.*?)\/message\/(?<message>.*?)$/.exec(
-    event.path
-  );
-
-  const { groups } = parsedUrl;
-  const { message, type: typeId } = groups;
-
-  // more stuff ...
-}
-```
-
-### Wrap up! We made it!
-
-Good job! We dit it. 🎉
+The virtual postcards are rendered and cached using the `@netlify/functions` package, which is part of [On-demand Builders](https://docs.netlify.com/configure-builds/on-demand-builders/).
