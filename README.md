@@ -19,13 +19,13 @@ The index route is [a static HTML file](https://github.com/stefanjudis/goofy-pos
 
 ### `/postcard/:id/message/:msg` - a serverless function
 
-The function endpoint leverages Netlify redirects to map URL query parameters to URL paths.
+[The function endpoint](https://github.com/stefanjudis/goofy-postcard/blob/main/netlify/functions/postcard.js) leverages Netlify redirects to map URL query parameters to URL paths.
 
 ```
 /generated/postcard type=:type message=:message /postcard/:type/message/:message 301!
 /postcard/:type/message/:message /.netlify/builders/postcard 200
 ```
 
-To make HTTP requests the function uses [cross-fetch](https://www.npmjs.com/package/cross-fetch) and accesses Contentful credentials via environment variables defined at Netlify.
+To make HTTP requests the function uses [cross-fetch](https://www.npmjs.com/package/cross-fetch) and accesses the needed Contentful credentials via environment variables defined at Netlify.
 
 The virtual postcards are rendered and cached using the `@netlify/functions` package, which is part of [On-demand Builders](https://docs.netlify.com/configure-builds/on-demand-builders/).
